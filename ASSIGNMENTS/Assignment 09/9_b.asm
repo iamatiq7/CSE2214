@@ -1,0 +1,59 @@
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+INPUT_MSG1 DB "ENTER THE VALUE OF M: $"
+INPUT_MSG2 DB 0DH,0AH,"ENTER THE VALUE OF N: $"
+OUTPUT_MSG DB 0DH,0AH,"THE GCD IS: $"
+
+.CODE
+MAIN PROC
+    MOV AX,@DATA
+    MOV DS,AX
+    
+    LEA DX,INPUT_MSG1
+    MOV AH,9
+    INT 21H
+    
+    CALL INPUT
+    
+    PUSH AX
+    
+    LEA DX,INPUT_MSG2
+    MOV AH,9
+    INT 21H
+           
+    CALL INPUT
+    
+    MOV BX,AX
+    
+    POP AX
+    
+    REPEAT:
+    XOR DX,DX
+    DIV BX
+    
+    CMP DX, 0
+    JE END_LOOP
+    
+    MOV AX,BX
+    MOV BX,DX
+    JMP REPEAT
+    
+    
+    END_LOOP:
+    
+    LEA DX,OUTPUT_MSG
+    MOV AH,9
+    INT 21H
+    
+    MOV AX,BX
+    
+    CALL OUTPUT
+    
+    MOV AH,4CH
+    INT 21H
+    MAIN ENDP
+INCLUDE INPUT_9b.ASM
+INCLUDE OUTPUT_9a.ASM
+END MAIN

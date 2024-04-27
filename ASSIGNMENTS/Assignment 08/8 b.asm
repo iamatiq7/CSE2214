@@ -1,0 +1,144 @@
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+INPUT_MSG DB 0DH,0AH,'ENTER AN ALGEBRIC EXPRESSION:$'
+CORRECT_MSG DB 0DH,0AH,'EXPRESSION IS CORRECT.$'
+MISMATCH_MSG DB 0DH,0AH,'MISMATCH BETWEEN LEFT AND RIGHT BRACKETS.$'
+LEFT_MSG DB 0DH,0AH,'TOO MANY LEFT BRACKETS.$'
+RIGHT_MSG DB 0DH,0AH,'TOO MANY RIGHT BRACKETS.$'
+CONTINUE_MSG DB 0DH,0AH,'TYPE Y TO RUN AGAIN: $'
+
+.CODE
+MAIN PROC
+    MOV AX,@DATA
+    MOV DS,AX
+    
+    START:
+    LEA DX,INPUT_MSG
+    MOV AH,9   
+    INT 21H
+    
+    XOR CX,CX
+    MOV AH,1
+    
+    INPUT:
+    INT 21H
+    
+    CMP AL,0DH
+    JE END_INPUT
+    
+    CMP AL,"["
+    JE PUSH_BRACKET
+    
+    CMP AL,"{"
+    JE PUSH_BRACKET
+    
+    CMP AL,"("
+    JE PUSH_BRACKET
+    
+    CMP AL,"]"
+    JE SQUARE_BRACKET
+    
+    CMP AL,"}"
+    JE CURLY_BRACKET
+    
+    CMP AL,")"
+    JE ROUND_BRACKET
+    
+    JMP INPUT
+    
+    PUSH_BRACKET:
+    PUSH AX
+    INC CX
+    JMP INPUT
+    
+    ROUND_BRACKET:
+    POP BX
+    DEC CX
+    
+    CMP CX,0
+    JL RIGHT_BRACKETS
+    
+    CMP BL,"("
+    JNE MISMATCH
+    JMP INPUT
+    
+    
+    CURLY_BRACKET:
+    POP BX
+    DEC CX
+    
+    CMP CX,0
+    JL RIGHT_BRACKETS
+    
+    CMP BL,"{"
+    JNE MISMATCH
+    JMP INPUT
+    
+    
+    SQUARE_BRACKET:
+    POP BX
+    DEC CX
+    
+    CMP CX,0
+    JL RIGHT_BRACKETS
+    
+    CMP BL,"["
+    JNE MISMATCH
+    JMP INPUT
+    
+    
+    END_INPUT:
+    CMP CX,0
+    JNE LEFT_BRACKETS
+    
+    LEA DX,CORRECT_MSG
+    MOV AH,9
+    INT 21H
+    
+    LEA DX,CONTINUE_MSG
+    INT 21H
+    
+    MOV AH,1
+    INT 21H
+    
+    CMP AL,"Y"
+    JNE EXIT
+    JMP START
+    
+    
+    RIGHT_BRACKETS:
+    
+    LEA DX,RIGHT_MSG
+    MOV AH,9
+    INT 21H
+    JMP START
+    
+    MISMATCH:  
+    LEA DX,MISMATCH_MSG
+    MOV AH,9
+    INT 21H
+    JMP START
+    
+    LEFT_BRACKETS:
+    LEA DX,LEFT_MSG
+    MOV AH,9
+    INT 21H
+    
+    LEA DX,CONTINUE_MSG
+    INT 21H
+    
+    MOV AH,1
+    INT 21H
+    
+    CMP AL,"Y"
+    JNE EXIT
+    JMP START
+    
+    
+    EXIT:
+    MOV AH,4CH
+    INT 21H
+    MAIN ENDP
+END MAIN
